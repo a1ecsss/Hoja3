@@ -5,7 +5,7 @@ public class Generator {
     private static final int MAX = 3000;
     private static final String nombreArchivo = "Numeros.txt";
 
-    private static void generarArchivo(int cantidadNumeros){
+    public void generarArchivo(int cantidadNumeros){
         Random random = new Random();
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(nombreArchivo))){
             for (int i = 0; i < cantidadNumeros; i++){
@@ -16,7 +16,7 @@ public class Generator {
     }
 }
 
-    private static int[] leerArchivo(){
+    public int[] leerArchivo(){
         List<Integer> listaNumeros = new ArrayList<>();
         try (BufferedReader reader = new BufferedReader(new FileReader(nombreArchivo))) {
             String line;
