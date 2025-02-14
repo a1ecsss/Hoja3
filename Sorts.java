@@ -1,139 +1,160 @@
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 public class Sorts {
-    
+
     /** 
      * Insertion Sort
      */
-    public static int[] insertionSort(int[] arr) {
-        int[] sortedArr = arr.clone();
-        for (int i = 1; i < sortedArr.length; i++) {
-            int key = sortedArr[i];
+    public static void insertionSort(List<Integer> arr) {
+        long startTime = System.nanoTime(); // Iniciar medición de tiempo
+
+        for (int i = 1; i < arr.size(); i++) {
+            int key = arr.get(i);
             int j = i - 1;
-            
-            while (j >= 0 && sortedArr[j] > key) {
-                sortedArr[j + 1] = sortedArr[j];
+            while (j >= 0 && arr.get(j) > key) {
+                arr.set(j + 1, arr.get(j));
                 j--;
             }
-            sortedArr[j + 1] = key;
+            arr.set(j + 1, key);
         }
-        return sortedArr;
+
+        long endTime = System.nanoTime(); // Finalizar medición de tiempo
+        System.out.println("Tiempo de ejecución Insertion Sort: " + (endTime - startTime) + " ns");
     }
 
     /**
      * Merge Sort
      */
-    public static int[] mergeSort(int[] arr) {
-        if (arr.length <= 1) return arr;
-
-        int mid = arr.length / 2;
-        int[] left = Arrays.copyOfRange(arr, 0, mid);
-        int[] right = Arrays.copyOfRange(arr, mid, arr.length);
-
-        left = mergeSort(left);
-        right = mergeSort(right);
-
-        int[] merged = new int[arr.length];
-        int i = 0, j = 0, k = 0;
-
-        while (i < left.length && j < right.length) {
-            merged[k++] = (left[i] < right[j]) ? left[i++] : right[j++];
-        }
-        while (i < left.length) merged[k++] = left[i++];
-        while (j < right.length) merged[k++] = right[j++];
-
-        return merged;
+    public static void mergeSort(List<Integer> arr) {
+        long startTime = System.nanoTime(); // Iniciar medición de tiempo
+    
+        mergeSortHelper(arr); // Llamar al método auxiliar sin medir tiempo interno
+    
+        long endTime = System.nanoTime(); // Finalizar medición de tiempo
+        System.out.println("Tiempo de ejecución Merge Sort: " + (endTime - startTime) + " ns");
     }
+    
+    // Método auxiliar para evitar medir múltiples veces
+    private static void mergeSortHelper(List<Integer> arr) {
+        if (arr.size() <= 1) return;
+    
+        int mid = arr.size() / 2;
+        List<Integer> left = new ArrayList<>(arr.subList(0, mid));
+        List<Integer> right = new ArrayList<>(arr.subList(mid, arr.size()));
+    
+        mergeSortHelper(left);
+        mergeSortHelper(right);
+        merge(arr, left, right);
+    }
+    
+    private static void merge(List<Integer> arr, List<Integer> left, List<Integer> right) {
+        int i = 0, j = 0, k = 0;
+        while (i < left.size() && j < right.size()) {
+            arr.set(k++, (left.get(i) < right.get(j)) ? left.get(i++) : right.get(j++));
+        }
+        while (i < left.size()) arr.set(k++, left.get(i++));
+        while (j < right.size()) arr.set(k++, right.get(j++));
+    }
+    
 
     /**
-     * Quick Sort (sin cambios)
+     * Quick Sort
      */
-    public static List<Integer> qs(List<Integer> list) {
-        if (list.size() <= 1) return list;
+    public static void quickSort(List<Integer> arr, int low, int high) {
+        long startTime = System.nanoTime(); // Iniciar medición de tiempo
 
-        int pivot = list.get(0);
-        List<Integer> left = new ArrayList<>();
-        List<Integer> right = new ArrayList<>();
-
-        for (int i = 1; i < list.size(); i++) {
-            if (list.get(i) < pivot) {
-                left.add(list.get(i));
-            } else {
-                right.add(list.get(i));
-            }
+        if (low < high) {
+            int pivotIndex = partition(arr, low, high);
+            quickSort(arr, low, pivotIndex - 1);
+            quickSort(arr, pivotIndex + 1, high);
         }
 
-        List<Integer> sortedList = new ArrayList<>();
-        sortedList.addAll(qs(left));
-        sortedList.add(pivot);
-        sortedList.addAll(qs(right));
+        long endTime = System.nanoTime(); // Finalizar medición de tiempo
+        if (low == 0 && high == arr.size() - 1) {
+            System.out.println("Tiempo de ejecución Quick Sort: " + (endTime - startTime) + " ns");
+        }
+    }
 
-        return sortedList;
+    private static int partition(List<Integer> arr, int low, int high) {
+        int pivot = arr.get(high);
+        int i = low - 1;
+        for (int j = low; j < high; j++) {
+            if (arr.get(j) < pivot) {
+                i++;
+                Collections.swap(arr, i, j);
+            }
+        }
+        Collections.swap(arr, i + 1, high);
+        return i + 1;
     }
 
     /**
      * Radix Sort
      */
-    public static int[] radixSort(int[] arr) {
-        int[] sortedArr = arr.clone();
-        int max = Arrays.stream(sortedArr).max().orElse(0);
+    public static void radixSort(List<Integer> arr) {
+        long startTime = System.nanoTime(); // Iniciar medición de tiempo
+
+        if (arr.isEmpty()) return;
+        List<Integer> mutableArr = new ArrayList<>(arr);
+        int max = Collections.max(mutableArr);
 
         for (int exp = 1; max / exp > 0; exp *= 10) {
-            int[] output = new int[sortedArr.length];
-            int[] count = new int[10];
-
-            for (int num : sortedArr) {
-                count[(num / exp) % 10]++;
-            }
-
-            for (int i = 1; i < 10; i++) {
-                count[i] += count[i - 1];
-            }
-
-            for (int i = sortedArr.length - 1; i >= 0; i--) {
-                output[count[(sortedArr[i] / exp) % 10] - 1] = sortedArr[i];
-                count[(sortedArr[i] / exp) % 10]--;
-            }
-
-            sortedArr = output.clone();
+            countingSortByDigit(mutableArr, exp);
         }
-        return sortedArr;
+        for (int i = 0; i < arr.size(); i++) {
+            arr.set(i, mutableArr.get(i));
+        }
+
+        long endTime = System.nanoTime(); // Finalizar medición de tiempo
+        System.out.println("Tiempo de ejecución Radix Sort: " + (endTime - startTime) + " ns");
+    }
+
+    private static void countingSortByDigit(List<Integer> arr, int exp) {
+        List<Integer> output = new ArrayList<>(Collections.nCopies(arr.size(), 0));
+        int[] count = new int[10];
+
+        for (int num : arr) count[(num / exp) % 10]++;
+        for (int i = 1; i < 10; i++) count[i] += count[i - 1];
+
+        for (int i = arr.size() - 1; i >= 0; i--) {
+            output.set(count[(arr.get(i) / exp) % 10] - 1, arr.get(i));
+            count[(arr.get(i) / exp) % 10]--;
+        }
+
+        for (int i = 0; i < arr.size(); i++) {
+            arr.set(i, output.get(i));
+        }
     }
 
     /**
      * Heap Sort
      */
-    public static int[] heapSort(int[] arr) {
-        int[] sortedArr = arr.clone();
-        int n = sortedArr.length;
+    public static void heapSort(List<Integer> arr) {
+        long startTime = System.nanoTime(); // Iniciar medición de tiempo
 
+        int n = arr.size();
         for (int i = n / 2 - 1; i >= 0; i--) {
-            heapify(sortedArr, n, i);
+            heapify(arr, n, i);
+        }
+        for (int i = n - 1; i > 0; i--) {
+            Collections.swap(arr, 0, i);
+            heapify(arr, i, 0);
         }
 
-        for (int i = n - 1; i > 0; i--) {
-            int temp = sortedArr[0];
-            sortedArr[0] = sortedArr[i];
-            sortedArr[i] = temp;
-            heapify(sortedArr, i, 0);
-        }
-        return sortedArr;
+        long endTime = System.nanoTime(); // Finalizar medición de tiempo
+        System.out.println("Tiempo de ejecución Heap Sort: " + (endTime - startTime) + " ns");
     }
 
-    private static void heapify(int[] arr, int n, int i) {
+    private static void heapify(List<Integer> arr, int n, int i) {
         int largest = i;
         int left = 2 * i + 1;
         int right = 2 * i + 2;
 
-        if (left < n && arr[left] > arr[largest]) largest = left;
-        if (right < n && arr[right] > arr[largest]) largest = right;
+        if (left < n && arr.get(left) > arr.get(largest)) largest = left;
+        if (right < n && arr.get(right) > arr.get(largest)) largest = right;
 
         if (largest != i) {
-            int temp = arr[i];
-            arr[i] = arr[largest];
-            arr[largest] = temp;
+            Collections.swap(arr, i, largest);
             heapify(arr, n, largest);
         }
     }
